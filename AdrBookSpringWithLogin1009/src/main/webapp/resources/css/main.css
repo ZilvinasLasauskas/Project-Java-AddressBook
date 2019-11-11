@@ -1,0 +1,81 @@
+html {
+    scroll-behavior: smooth;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    vertical-align: top;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.content {
+    display: inline-block;
+    background-color: #FBFBFB;
+    width: 100%;
+}
+
+.short-content {
+    height: 100vh;
+}
+
+h1 {
+    display: inline-block;
+    width: 100%;
+    margin: 20px;
+}
+
+form > b {
+    margin-left: 10px;
+}
+
+form > .btn {
+    background-color: transparent;
+    border: none;
+    background-color: #7EBCA1;
+}
+form > .btn:hover {
+    cursor: pointer;
+    opacity: 0.8;
+    font-weight: bolder;
+}
+
+.content > a {
+    margin-right: 10px;
+    text-decoration: none;
+}
+
+body > .content > .new {
+    display: inline-block;
+    margin: 10px;
+    font-size: 20px;
+}
+
+.red {
+    color: #FF4040;
+}
+
+.blue {
+    color: #1AA3FF;
+}
+
+.yellow {
+    color: #FFC300;
+}
+
+.green {
+    color: #7EBCA1;
+}
+
+body > .content > a:hover {
+    opacity: 0.8;
+    font-weight: bolder;
+}
+
+span {
+    margin-left: 10px;
+}
+
