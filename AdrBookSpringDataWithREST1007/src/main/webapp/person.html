@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Address book page</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    </head>
+    <body>
+        <div>Person's Address Book</div>
+        <p> </p>
+        <button onclick="personListClick();">List</button>
+        <div id="addressSpace"></div>
+        <div id="newAddressSpace"></div>
+        <div id="contactSpace"></div>
+        <div id="newContactSpace"></div>
+        <div id="personSpace"></div>
+        <div id="newPersonSpace"></div>
+        <script>
+            function personListClick() {
+                fetch("rest/person", {
+                    method: "GET",
+                    cache: "no-cache",
+                    headers: {
+                        Accept: "application/json",
+                        "Accept-Charset": "utf-8",
+                        "Content-Type": "application/json; charset=utf-8"
+                    }
+                })
+                        .then(response => response.json())
+                        .then(response => {
+                            console.log("response: ", response);
+                            let list = response;
+                            let HTML = '';
+                            for (p in list) {
+                                HTML += "<input id='pId' value =" + list[p].id + ">" +
+                                        "<input id='fn' value =" + list[p].firstName + ">" +
+                                        "<input id='ln' value =" + list[p].lastName + ">" +
+                                        "<input id='bd' value =" + list[p].birthDate + ">" +
+                                        "<input id='salary' value =" + list[p].salary + ">" +
+                                        '<button style = "margin-left: 6px;" onclick="getEditClick(' + list[p].id + ');">Edit</button>' +
+                                        '<button style = "margin-left: 6px;" onclick="deleteClick(' + list[p].id + ');">Delete</button>' +
+                                        '<button style = "margin-left: 6px;" onclick="personAddressesClick(' + list[p].id + ');">Address</button>' +
+                                        '<button style = "margin-left: 6px;" onclick="personContactsClick(' + list[p].id + ');">Contact</button>' +
+                                        '<br>';
+                            }
+                            document.getElementById('personSpace').innerHTML = '<br>' + "Persons :" + '<br>' +
+                                    '<button style = "margin: 6px 0px;" onclick="newClick();">Add</button>' + '<br>' +
+                                    '<div id="newPersonSpace"></div>' + '<br>' + HTML;
+
+                        });
+            }
+
+            function newClick() {
+                HTML = '<input id= "fn" type = "text" placeholder="First name">' +
+                        '<input id= "ln" placeholder="Last name">' +
+                        '<input id= "bd" placeholder="Birth date">' +
+                        '<input id= "salary" type="number" placeholder="Salary">' +
+                        '<button style = "margin-left: 6px;" onclick="addClick();">Save</button>';
+                document.getElementById('newPersonSpace').innerHTML = HTML;
+            }
+
+            function addClick() {
+                const fn = document.getElementById("fn").value;
+                const ln = document.getElementById("ln").value;
+                const bd = document.getElementById("bd").value;
+                const salary = document.getElementById("salary").value;
+                if (fn !== "" && ln !== "") {
+                    const p = {
+                        firstName: fn,
+                        lastName: ln,
+                        birthDate: bd,
+                        salary: parseFloat(salary)
+                    };
+
+                    fetch("rest/person/", {
+                        method: "POST",
+                        cache: "no-cache",
+                        headers: {
+                            Accept: "application/json",
+                            "Accept-Charset": "utf-8",
+                            "Content-Type": "application/json; charset=utf-8"
+                        },
+                        body: JSON.stringify(p)
+                    })
+                            .then(response => response.json())
+                            .then(response => {
+                                console.log("response: ", response);
+                                alert("New Person added");
+                                personListClick();
+                            }
+                            )
+                            .catch(err => {
+                                console.error("error while updating", err);
+                            });
+                }
+            }
+
+            function getEditClick(id) {
+                fetch("rest/person/" + id, {
+                    method: "GET",
+                    cache: "no-cache",
+                    headers: {
+                        Accept: "application/json",
+                        "Accept-Charset": "utf-8",
+                        "Content-Type": "application/json; charset=utf-8"
+                    }
+                })
+                        .then(response => response.json())
+                        .then(response => {
+                            console.log("response: ", response);
+                            let p = response;
+                            HTML = "<input id='pId' value =" + p.id + ">" +
+                                    "<input id='fn' value =" + p.firstName + ">" +
+                                    "<input id='ln' value =" + p.lastName + ">" +
+                                    "<input id='bd' value =" + p.birthDate + ">" +
+                                    "<input id='salary' value =" + p.salary + ">" +
+                                    '<button style = "margin-left: 6px;" onclick="updateClick(' + p.id + ');">Update</button>' +
+                                    '<br>';
+                            document.getElementById('personSpace').innerHTML = '<br>' + "Person for edit :" + '<br>' +
+                                    '<div id="newPersonSpace"></div>' + '<br>' + HTML;
+                        })
+                        .catch(err => {
+                            console.error("error while getting", err);
+                        });
+            }
+
+            function updateClick(id) {
+                const fn = document.getElementById("fn").value;
+                const ln = document.getElementById("ln").value;
+                const bd = document.getElementById("bd").value;
+                const salary = document.getElementById("salary").value;
+                const p = {
+                    id: id,
+                    firstName: fn,
+                    lastName: ln,
+                    birthDate: bd,
+                    salary: parseFloat(salary)
+                };
+
+                fetch("rest/person/" + id, {
+                    method: "PUT",
+                    cache: "no-cache",
+                    headers: {
+                        Accept: "application/json",
+                        "Accept-Charset": "utf-8",
+                        "Content-Type": "application/json; charset=utf-8"
+                    },
+                    body: JSON.stringify(p)
+                })
+                        .then(response => response.json())
+                        .then(response => {
+                            document.getElementById("fn").value = response.firstName,
+                                    document.getElementById("ln").value = response.lastName,
+                                    document.getElementById("bd").value = response.birthDate,
+                                    document.getElementById("salary").value = response.salary,
+                                    console.log("response: ", response);
+                            document.getElementById('contactSpace').innerHTML = "";
+                            document.getElementById('addressSpace').innerHTML = "";
+                            alert("Person updated");
+                        })
+                        .catch(err => {
+                            console.error("error while updating", err);
+                        });
+            }
+
+            function deleteClick(id) {
+                fetch("rest/person/" + id, {
+                    method: "DELETE",
+                    cache: "no-cache",
+                    headers: {
+                        Accept: "application/json",
+                        "Accept-Charset": "utf-8",
+                        "Content-Type": "application/json; charset=utf-8"
+                    }
+                })
+                        .then(response => {
+                            console.log("response: ", response);
+                            alert("person deleted");
+                            personListClick();
+                        }).catch(err => {
+                    console.error("error while deleting", err);
+                });
+            }
+
+            function personAddressesClick(personId) {
+                fetch("rest/person/" + personId + "/address", {
+                    method: "GET",
+                    cache: "no-cache",
+                    headers: {
+                        Accept: "application/json",
+                        "Accept-Charset": "utf-8",
+                        "Content-Type": "application/json; charset=utf-8"
+                    }
+                })
+                        .then(response => response.json())
+                        .then(response => {
+                            console.log("response: ", response);
+                            let list = response;
+                            let HTML = '';
+                            for (a in list) {
+                                HTML += "<input id='aId' value =" + list[a].id + ">" +
+                                        "<input id='address' value =" + list[a].address + ">" +
+                                        "<input id='city' value =" + list[a].city + ">" +
+                                        "<input id='postal_code' value =" + list[a].postalCode + ">" +
+                                        '<button style = "margin-left: 6px;" onclick="updateAddressClick(' + personId + ', ' + list[a].id + ');">Update</button>' +
+                                        '<button style = "margin-left: 6px;" onclick="deleteAddressClick(' + personId + ');">Delete</button>' + '<br>';
+                            }
+                            fetch("rest/person/" + personId, {
+                                method: "GET",
+                                cache: "no-cache",
+                                headers: {
+                                    Accept: "application/json",
+                                    "Accept-Charset": "utf-8",
+                                    "Content-Type": "application/json; charset=utf-8"
+                                }
+                            })
+                                    .then(response => response.json())
+                                    .then(response => {
+                                        console.log("response personaaaa: ", response);
+                                        const p = response;
+                                        document.getElementById('addressSpace').innerHTML = '<br>' + "Addresses of: " + p.firstName + ' ' + p.lastName + '<br>' +
+                                                '<button style = "margin: 6px 0px;" onclick="newAddress(' + personId + ');">Add Address</button>' + '<br>' +
+                                                '<div id="newAddressSpace"></div>' + '<br>' + HTML;
+                                        document.getElementById('contactSpace').innerHTML = "";
+                                        document.getElementById('personSpace').innerHTML = "";
+                                    })
+                                    .catch(err => {
+                                        console.error("error", err);
+                                    });
+                        }).catch(err => {
+                    console.error("error while choosing", err);
+                });
+            }
+
+            function newAddress(personId) {
+                HTML = '<input id="adstr" placeholder="Address">' +
+                        '<input id="adcit" placeholder="City">' +
+                        '<input id="adpostc" placeholder="Postal_code">' +
+                        '<button style = "margin-left: 6px;" onclick="addAddressClick(' + personId + ');">Save</button>' +
+                        '<br>';
+                document.getElementById('newAddressSpace').innerHTML = HTML;
+            }
+
+            function addAddressClick(personId) {
+                const adstr = document.getElementById("adstr").value;
+                const adcit = document.getElementById("adcit").value;
+                const adpostc = document.getElementById("adpostc").value;
+                if (adstr !== "" && adcit !== "") {
+                    const a = {
+                        address: adstr,
+                        city: adcit,
+                        postalCode: adpostc
+                    };
+                    fetch("rest/person/" + personId + "/address", {
+                        method: "POST",
+                        cache: "no-cache",
+                        headers: {
+                            Accept: "application/json",
+                            "Accept-Charset": "utf-8",
+                            "Content-Type": "application/json; charset=utf-8"
+                        },
+                        body: JSON.stringify(a)
+                    })
+                            .then(response => response.json())
+                            .then(response => {
+                                console.log("response: ", response);
+                                let a = response;
+                                alert("address saved");
+                                personAddressesClick(personId);
+                            }).catch(err => {
+                        console.error("error while saving", err);
+                    });
+                }
+            }
+
+            function updateAddressClick(personId, aId) {
+
+                const address = document.getElementById("address").value;
+                const city = document.getElementById("city").value;
+                const postalCode = document.getElementById("postal_code").value;
+                if (address !== "" && city !== "") {
+                    const a = {
+                        address: address,
+                        city: city,
+                        postalCode: postalCode
+                    };
+                    fetch("rest/person/" + personId + "/address/" + aId, {
+                        method: "PUT",
+                        cache: "no-cache",
+                        headers: {
+                            Accept: "application/json",
+                            "Accept-Charset": "utf-8",
+                            "Content-Type": "application/json; charset=utf-8"
+                        },
+                        body: JSON.stringify(a)
+                    })
+                            .then(response => response.json())
+                            .then(response => {
+                                document.getElementById("address").value = response.address;
+                                document.getElementById("city").value = response.city;
+                                document.getElementById("postal_code").value = response.postalCode;
+                                console.log("response: ", response);
+                                alert("Address updated.");
+                            }).catch(err => {
+                        console.error("error while updating", err);
+                    });
+                }
+            }
+                function deleteAddressClick(id) {
+                    let aId = document.getElementById('aId').value;
+                    aId = parseInt(aId);
+                    if (isNaN(aId)) {
+                        return;
+                    }
+                    fetch("rest/person/" + id + "/address/" + aId, {
+                        method: "DELETE",
+                        cache: "no-cache",
+                        headers: {
+                            Accept: "application/json",
+                            "Accept-Charset": "utf-8",
+                            "Content-Type": "application/json; charset=utf-8"
+                        }
+                    })
+                            .then(response => {
+                                console.log("response: ", response);
+                                alert("address deleted");
+                                personAddressesClick(id);
+                            }).catch(err => {
+                        console.error("error while deleting", err);
+                    });
+                }
+
+                function personContactsClick(personId) {
+                    fetch("rest/person/" + personId + "/contact", {
+                        method: "GET",
+                        cache: "no-cache",
+                        headers: {
+                            Accept: "application/json",
+                            "Accept-Charset": "utf-8",
+                            "Content-Type": "application/json; charset=utf-8"
+                        }
+                    })
+                            .then(response => response.json())
+                            .then(response => {
+                                console.log("response: ", response);
+                                let list = response;
+                                let HTML = '';
+                                for (c in list) {
+                                    HTML += "<input id='cId' value =" + list[c].id + ">" +
+                                            "<input id='type' value =" + list[c].type + ">" +
+                                            "<input id='contact' value =" + list[c].contact + ">" +
+                                            '<button onclick="updateContactClick(' + personId + ', ' + list[c].id + ');">Update</button>' +
+                                            '<button onclick="deleteContactClick(' + personId + ');">Delete</button>' + '<br>';
+                                }
+
+                                fetch("rest/person/" + personId, {
+                                    method: "GET",
+                                    cache: "no-cache",
+                                    headers: {
+                                        Accept: "application/json",
+                                        "Accept-Charset": "utf-8",
+                                        "Content-Type": "application/json; charset=utf-8"
+                                    }
+                                })
+                                        .then(response => response.json())
+                                        .then(response => {
+                                            console.log("response personaaaa: ", response);
+                                            const p = response;
+                                            document.getElementById('contactSpace').innerHTML = '<br>' + "Contacts of: " + p.firstName + ' ' + p.lastName + '<br>' +
+                                                    '<button style = "margin: 6px 0px;" onclick="newContact(' + personId + ');">Add Contact</button>' + '<br>' +
+                                                    '<div id="newContactSpace"></div>' + '<br>' + HTML;
+                                            document.getElementById('personSpace').innerHTML = "";
+                                            document.getElementById('addressSpace').innerHTML = "";
+                                        })
+                                        .catch(err => {
+                                            console.error("error", err);
+                                        });
+                            }).catch(err => {
+                        console.error("error while choosing", err);
+                    });
+                }
+
+                function newContact(personId) {
+                    HTML = '<input id="ctyp" placeholder="Type">' +
+                            '<input id="ccon" placeholder="Contact">' +
+                            '<button style = "margin-left: 6px;" onclick="addContactClick(' + personId + ');">Save</button>' +
+                            '<br>';
+                    document.getElementById('newContactSpace').innerHTML = HTML;
+                }
+
+                function addContactClick(personId) {
+                    const ctyp = document.getElementById("ctyp").value;
+                    const ccon = document.getElementById("ccon").value;
+                    if (ctyp !== "" && ccon !== "") {
+                        const c = {
+                            type: ctyp,
+                            contact: ccon
+                        };
+                        fetch("rest/person/" + personId + "/contact", {
+                            method: "POST",
+                            cache: "no-cache",
+                            headers: {
+                                Accept: "application/json",
+                                "Accept-Charset": "utf-8",
+                                "Content-Type": "application/json; charset=utf-8"
+                            },
+                            body: JSON.stringify(c)
+                        })
+                                .then(response => response.json())
+                                .then(response => {
+                                    console.log("response: ", response);
+                                    let c = response;
+                                    alert("contact saved");
+                                    personContactsClick(personId);
+                                }).catch(err => {
+                            console.error("error while saving", err);
+                        });
+                    }
+                }
+
+                function updateContactClick(personId, cId) {
+
+                    const type = document.getElementById("type").value;
+                    const contact = document.getElementById("contact").value;
+                    if (type !== "" && contact !== "") {
+                        const c = {
+                            type: type,
+                            contact: contact
+                        };
+                        fetch("rest/person/" + personId + "/contact/" + cId, {
+                            method: "PUT",
+                            cache: "no-cache",
+                            headers: {
+                                Accept: "application/json",
+                                "Accept-Charset": "utf-8",
+                                "Content-Type": "application/json; charset=utf-8"
+                            },
+                            body: JSON.stringify(c)
+                        })
+                                .then(response => response.json())
+                                .then(response => {
+                                    document.getElementById("type").value = response.type;
+                                    document.getElementById("contact").value = response.contact;
+                                    console.log("response: ", response);
+                                    alert("Contact updated.");
+                                }).catch(err => {
+                            console.error("error while updating", err);
+                        });
+                    }
+                }
+                    function deleteContactClick(id) {
+                        cId = parseInt(cId);
+                        if (isNaN(cId)) {
+                            return;
+                        }
+                        fetch("rest/person/" + id + "/contact/" + cId, {
+                            method: "DELETE",
+                            cache: "no-cache",
+                            headers: {
+                                Accept: "application/json",
+                                "Accept-Charset": "utf-8",
+                                "Content-Type": "application/json; charset=utf-8"
+                            }
+                        })
+                                .then(response => {
+                                    console.log("response: ", response);
+                                    alert("contact deleted");
+                                    personContactsClick(id);
+                                }).catch(err => {
+                            console.error("error while deleting", err);
+                        });
+                    }
+        </script>
+    </body>
+</html>
